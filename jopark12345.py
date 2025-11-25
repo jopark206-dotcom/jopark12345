@@ -1,4 +1,4 @@
-# streamlit_student_rf_safe.py
+# streamlit_student_rf_fixed.py
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -118,15 +118,12 @@ if train_button:
         preproc = model.named_steps["preprocess"]
         feature_names = []
 
+        # 학습 후에만 get_feature_names_out 호출
         for name, transformer, cols_ in preproc.transformers:
             if transformer == "passthrough":
                 feature_names.extend(cols_)
             else:
-                try:
-                    feature_names.extend(transformer.get_feature_names_out(cols_))
-                except:
-                    # fit되지 않았거나 오류 발생 시 fallback
-                    feature_names.extend(cols_)
+                feature_names.extend(transformer.get_feature_names_out(cols_))
 
         importances = rf.feature_importances_
         fi = pd.DataFrame({"feature": feature_names, "importance": importances}).sort_values("importance", ascending=False)
