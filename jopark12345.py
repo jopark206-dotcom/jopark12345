@@ -132,12 +132,7 @@ y = df[target].copy()
 cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
 num_cols = X.select_dtypes(include=[np.number]).columns.tolist()
 
-st.markdown("---")
-st.markdown(
-    f"**범주형 변수:** {cat_cols if cat_cols else '없음'}  
-"
-    f"**수치형 변수:** {num_cols if num_cols else '없음'}"
-)
+
 
 # -------------------------------------------------
 # 모델 학습 버튼
