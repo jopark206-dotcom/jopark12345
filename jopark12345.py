@@ -50,50 +50,38 @@ def get_feature_names_from_preprocessor(preprocessor, X_columns):
     return feature_names
 
 # -------------------------------------------------
+# 데이터 로딩 (CSV 내장 사용)
+# -------------------------------------------------
+
+@st.cache_data
+def load_data():
+    try:
+        return pd.read_csv("data.csv")
+    except FileNotFoundError:
+        df = pd.DataFrame({
+            "student_id": range(1, 101),
+            "hours_studied": np.random.normal(5, 2, 100).clip(0),
+            "sleep_hours": np.random.normal(7, 1, 100).clip(4, 10),
+            "study_method": np.random.choice(["group", "solo", "online"], 100),
+            "exam_score": np.random.normal(70, 10, 100).clip(0, 100),
+        })
+        return df
+
+
+df = load_data()
+
+if df.empty:
+    st.error("데이터가 없습니다. student_habits_performance.csv 파일을 확인하세요.")
+    st.stop()
+
+# -------------------------------------------------
 # 사이드바 설정
 # -------------------------------------------------
 
 st.sidebar.title("설정")
-uploaded_file = st.sidebar.file_uploader("CSV 파일 업로드", type=["csv"])
-use_example = st.sidebar.checkbox("샘플 데이터 사용 (student_habits_performance.csv)", value=True)
-
 n_estimators = st.sidebar.slider("트리 개수 (n_estimators)", 10, 1000, 300, 10)
 train_size = st.sidebar.slider("학습 비율", 0.5, 0.95, 0.8, 0.05)
 random_state = st.sidebar.number_input("랜덤 시드", value=42, format="%d")
-
-st.sidebar.markdown("---")
-st.sidebar.markdown("CSV를 업로드하거나 data.csv 파일을 프로젝트에 넣어주세요.")
-
-# -------------------------------------------------
-# 데이터 로딩
-# -------------------------------------------------
-
-@st.cache_data
-def load_data(uploaded_file, use_example):
-    if uploaded_file is not None:
-        return pd.read_csv(uploaded_file)
-
-    if use_example:
-        try:
-            return pd.read_csv("student_habits_performance.csv")
-        except FileNotFoundError:
-            df = pd.DataFrame({
-                "student_id": range(1, 101),
-                "hours_studied": np.random.normal(5, 2, 100).clip(0),
-                "sleep_hours": np.random.normal(7, 1, 100).clip(4, 10),
-                "study_method": np.random.choice(["group", "solo", "online"], 100),
-                "exam_score": np.random.normal(70, 10, 100).clip(0, 100),
-            })
-            return df
-
-    return pd.DataFrame()
-
-
-df = load_data(uploaded_file, use_example)
-
-if df.empty:
-    st.error("데이터가 없습니다. CSV 파일을 업로드하거나 샘플 데이터를 사용하세요.")
-    st.stop()
 
 # -------------------------------------------------
 # 헤더
@@ -131,8 +119,6 @@ y = df[target].copy()
 
 cat_cols = X.select_dtypes(include=["object", "category"]).columns.tolist()
 num_cols = X.select_dtypes(include=[np.number]).columns.tolist()
-
-
 
 # -------------------------------------------------
 # 모델 학습 버튼
@@ -218,4 +204,3 @@ if train_button:
 
 st.markdown("---")
 st.markdown("추가 기능(샘플링, 교차검증, SHAP 해석 등) 원하면 알려주세요.")
-
